@@ -1,0 +1,142 @@
+{
+  "stats": {
+    "suites": 2,
+    "tests": 2,
+    "passes": 2,
+    "pending": 0,
+    "failures": 0,
+    "start": "2025-04-08T09:23:10.229Z",
+    "end": "2025-04-08T09:23:26.627Z",
+    "duration": 16398,
+    "testsRegistered": 2,
+    "passPercent": 100,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "91b91725-9b88-4277-a182-ed8164969f15",
+      "title": "",
+      "fullFile": "",
+      "file": "",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "02267dd8-96bd-4737-965f-21e8cdd882cc",
+          "title": "Login and Add Item Test",
+          "fullFile": "F:\\Software Development\\JavasScript\\Selenium IDE\\SeleniumTestsLocal\\tests\\addItemTest.js",
+          "file": "\\tests\\addItemTest.js",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "should login, add items to the list, and return the number of added items",
+              "fullTitle": "Login and Add Item Test should login, add items to the list, and return the number of added items",
+              "timedOut": null,
+              "duration": 10344,
+              "state": "passed",
+              "speed": "slow",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "const chai = await import('chai');\nconst should = chai.should();\nlet username = 'testuser';\nlet password = 'Testpassword123!';\nlet driver = await new Builder().forBrowser('chrome').build();\ntry {\n    // Login logic\n    await driver.get('https://norvember.github.io/SileniumWebpage/');\n    while (true) {\n        await driver.findElement(By.id('login-username')).sendKeys(username);\n        await driver.findElement(By.id('login-password')).sendKeys(password);\n        await driver.findElement(By.id('login-form')).submit();\n        let errorMessage = '';\n        try {\n            errorMessage = await driver.findElement(By.id('login-error')).getText();\n        } catch (e) {\n            // No error message found, assume login successful\n        }\n        if (!errorMessage) {\n            let currentUrl = await driver.getCurrentUrl();\n            currentUrl.should.include('dashboard', 'User should be redirected to the dashboard after login');\n            console.log('Login successful!');\n            break;\n        } else {\n            console.log('Login failed:', errorMessage);\n            if (errorMessage === 'Invalid username or password.') {\n                await signUp(driver, username, password);\n            } else {\n                throw new Error('Unexpected login error: ' + errorMessage);\n            }\n        }\n    }\n    // Add items logic\n    await driver.get('https://norvember.github.io/SileniumWebpage/dashboard.html');\n    const itemsToAdd = ['Task 1', 'Task 2', 'Task 3'];\n    for (const item of itemsToAdd) {\n        await driver.findElement(By.id('item-name')).sendKeys(item, Key.RETURN);\n    }\n    // Verify and return the number of added items\n    let itemList = await driver.findElements(By.css('#item-list li'));\n    itemList.length.should.equal(itemsToAdd.length, `The item list should contain ${itemsToAdd.length} items.`);\n    console.log(`Added ${itemList.length} items to the list.`);\n    return itemList.length;\n} finally {\n    await driver.quit();\n}",
+              "err": {},
+              "uuid": "547effd9-f966-4918-a0ae-dc2e3a09f28b",
+              "parentUUID": null,
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "547effd9-f966-4918-a0ae-dc2e3a09f28b"
+          ],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 10344,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": null
+        },
+        {
+          "uuid": "e4bd0584-4c11-4e20-a65a-99103576aac5",
+          "title": "Reset Password Test",
+          "fullFile": "F:\\Software Development\\JavasScript\\Selenium IDE\\SeleniumTestsLocal\\tests\\resetPasswordTest.js",
+          "file": "\\tests\\resetPasswordTest.js",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "should follow the reset password flow and login successfully",
+              "fullTitle": "Reset Password Test should follow the reset password flow and login successfully",
+              "timedOut": null,
+              "duration": 15639,
+              "state": "passed",
+              "speed": "slow",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "const chai = await import('chai');\nconst should = chai.should();\nlet username = 'testuser';\nlet password = 'Testpassword123!';\nlet wrongPassword = 'WrongPassword123!';\nlet driver = await new Builder().forBrowser('chrome').build();\ntry {\n    // Step 1: Attempt login with no username\n    await driver.get('https://norvember.github.io/SileniumWebpage/');\n    await driver.findElement(By.id('login-username')).sendKeys('');\n    await driver.findElement(By.id('login-password')).sendKeys(password);\n    await driver.findElement(By.id('login-form')).submit();\n    let errorMessage = '';\n    try {\n        errorMessage = await driver.findElement(By.id('login-error')).getText();\n    } catch (e) {\n        // No error message found\n    }\n    if (errorMessage) {\n        console.log('Login failed:', errorMessage);\n        errorMessage.should.equal('Invalid username or password.', 'Expected error message for missing username');\n    }\n    // Step 2: Sign up\n    await signUp(driver, username, password);\n    // Step 3: Attempt login with wrong password\n    await driver.findElement(By.id('login-username')).sendKeys(username);\n    await driver.findElement(By.id('login-password')).sendKeys(wrongPassword);\n    await driver.findElement(By.id('login-form')).submit();\n    errorMessage = '';\n    try {\n        errorMessage = await driver.findElement(By.id('login-error')).getText();\n    } catch (e) {\n        // No error message found\n    }\n    if (errorMessage) {\n        console.log('Login failed with wrong password:', errorMessage);\n        errorMessage.should.equal('Invalid username or password.', 'Expected error message for wrong password');\n    }\n    // Step 4: Reset password\n    await driver.findElement(By.linkText('Forgot Password?')).click();\n    await driver.sleep(2000); // wait for the page to load\n    await driver.findElement(By.id('recover-username')).sendKeys(username);\n    await driver.findElement(By.id('recover-password-form')).submit();\n    let successMessage = '';\n    try {\n        successMessage = await driver.findElement(By.id('recover-success')).getText();\n    } catch (e) {\n        // No success message found\n    }\n    successMessage.should.include(password, 'Expected success message with the reset password');\n    // Navigate back to the login page\n    await driver.findElement(By.linkText('Back to Login')).click();\n    await driver.sleep(2000); // wait for the page to load\n    // Step 5: Login successfully with the reset password\n    await driver.findElement(By.id('login-username')).sendKeys(username);\n    await driver.findElement(By.id('login-password')).sendKeys(password);\n    await driver.findElement(By.id('login-form')).submit();\n    let currentUrl = await driver.getCurrentUrl();\n    currentUrl.should.include('dashboard', 'User should be redirected to the dashboard after successful login');\n    console.log('Login successful after password reset!');\n} finally {\n    await driver.quit();\n}",
+              "err": {},
+              "uuid": "c8bb162d-bde9-4db1-9220-e81bb5e8a14b",
+              "parentUUID": null,
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "c8bb162d-bde9-4db1-9220-e81bb5e8a14b"
+          ],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 15639,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": null
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 0
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "11.1.0"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": true,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.3"
+    },
+    "marge": {
+      "options": {
+        "reportDir": "testReports",
+        "": true
+      },
+      "version": "6.2.0"
+    }
+  }
+}
