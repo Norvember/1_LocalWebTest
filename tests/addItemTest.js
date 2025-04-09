@@ -3,13 +3,13 @@ const { Builder, By, Key } = require('selenium-webdriver');
 async function signUp(driver, username, password) {
     console.log('Attempting to sign up...');
     await driver.findElement(By.linkText('Sign Up')).click();
-    await driver.sleep(2000); // wait for the page to load
+    await driver.sleep(2000);
 
-    // Enter username and password for signup
+    // Username and password for signup
     await driver.findElement(By.id('register-username')).sendKeys(username);
     await driver.findElement(By.id('register-password')).sendKeys(password, Key.RETURN);
 
-    // Check for signup error message
+    // Signup error message
     let registerErrorMessage = '';
     try {
         let errorElement = await driver.findElement(By.id('register-error'));
@@ -28,10 +28,12 @@ async function signUp(driver, username, password) {
     }
 
     console.log('Signup successful, returning to login...');
-    await driver.sleep(2000); // wait for the page to redirect back to login
+    await driver.sleep(2000);
 }
 
 describe('Login and Add Item Test', function () {
+    this.timeout(30000);
+
     it('should login, add items to the list, and return the number of added items', async function () {
         const chai = await import('chai');
         const should = chai.should();
@@ -40,47 +42,58 @@ describe('Login and Add Item Test', function () {
         let driver = await new Builder().forBrowser('chrome').build();
 
         try {
-            // Login logic
+            // Step 1: Attempt login
             await driver.get('https://norvember.github.io/SileniumWebpage/');
-            while (true) {
+            await driver.findElement(By.id('login-username')).sendKeys(username);
+            await driver.findElement(By.id('login-password')).sendKeys(password);
+            await driver.findElement(By.id('login-form')).submit();
+
+            let errorMessage = '';
+            try {
+                errorMessage = await driver.findElement(By.id('login-error')).getText();
+            } catch (e) {
+                // No error message found, assume login successful
+            }
+
+            if (errorMessage) {
+                console.log('Login failed:', errorMessage);
+                errorMessage.should.equal('Invalid username or password.', 'Expected error message for invalid credentials');
+
+                // Step 2: Sign up if login fails
+                await signUp(driver, username, password);
+
+                // Step 3: Retry login after signup
                 await driver.findElement(By.id('login-username')).sendKeys(username);
                 await driver.findElement(By.id('login-password')).sendKeys(password);
                 await driver.findElement(By.id('login-form')).submit();
 
-                let errorMessage = '';
+                errorMessage = '';
                 try {
                     errorMessage = await driver.findElement(By.id('login-error')).getText();
                 } catch (e) {
                     // No error message found, assume login successful
                 }
 
-                if (!errorMessage) {
-                    let currentUrl = await driver.getCurrentUrl();
-                    currentUrl.should.include('dashboard', 'User should be redirected to the dashboard after login');
-                    console.log('Login successful!');
-                    break;
-                } else {
-                    console.log('Login failed:', errorMessage);
-                    if (errorMessage === 'Invalid username or password.') {
-                        await signUp(driver, username, password);
-                    } else {
-                        throw new Error('Unexpected login error: ' + errorMessage);
-                    }
+                if (errorMessage) {
+                    throw new Error('Unexpected login error after signup: ' + errorMessage);
                 }
             }
 
-            // Add items logic
+            let currentUrl = await driver.getCurrentUrl();
+            currentUrl.should.include('dashboard', 'User should be redirected to the dashboard after login');
+            console.log('Login successful!');
+
+            // Step 4: Add items to the list
             await driver.get('https://norvember.github.io/SileniumWebpage/dashboard.html');
             const itemsToAdd = ['Task 1', 'Task 2', 'Task 3'];
             for (const item of itemsToAdd) {
                 await driver.findElement(By.id('item-name')).sendKeys(item, Key.RETURN);
             }
 
-            // Verify and return the number of added items
+            // Step 5: Verify and return the number of added items
             let itemList = await driver.findElements(By.css('#item-list li'));
             itemList.length.should.equal(itemsToAdd.length, `The item list should contain ${itemsToAdd.length} items.`);
             console.log(`Added ${itemList.length} items to the list.`);
-            return itemList.length;
         } finally {
             await driver.quit();
         }

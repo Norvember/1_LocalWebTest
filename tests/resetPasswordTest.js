@@ -3,13 +3,13 @@ const { Builder, By, Key } = require('selenium-webdriver');
 async function signUp(driver, username, password) {
     console.log('Attempting to sign up...');
     await driver.findElement(By.linkText('Sign Up')).click();
-    await driver.sleep(2000); // wait for the page to load
+    await driver.sleep(2000);
 
-    // Enter username and password for signup
+    // Username and password for signup
     await driver.findElement(By.id('register-username')).sendKeys(username);
     await driver.findElement(By.id('register-password')).sendKeys(password, Key.RETURN);
 
-    // Check for signup error message
+    // Signup error message
     let registerErrorMessage = '';
     try {
         let errorElement = await driver.findElement(By.id('register-error'));
@@ -28,11 +28,11 @@ async function signUp(driver, username, password) {
     }
 
     console.log('Signup successful, returning to login...');
-    await driver.sleep(2000); // wait for the page to redirect back to login
+    await driver.sleep(2000);
 }
 
 describe('Reset Password Test', function () {
-    this.timeout(30000); // Increase timeout to 30 seconds for the test suite
+    this.timeout(30000);
 
     it('should follow the reset password flow and login successfully', async function () {
         const chai = await import('chai');
@@ -83,7 +83,7 @@ describe('Reset Password Test', function () {
 
             // Step 4: Reset password
             await driver.findElement(By.linkText('Forgot Password?')).click();
-            await driver.sleep(2000); // wait for the page to load
+            await driver.sleep(2000);
 
             await driver.findElement(By.id('recover-username')).sendKeys(username);
             await driver.findElement(By.id('recover-password-form')).submit();
@@ -99,7 +99,7 @@ describe('Reset Password Test', function () {
 
             // Navigate back to the login page
             await driver.findElement(By.linkText('Back to Login')).click();
-            await driver.sleep(2000); // wait for the page to load
+            await driver.sleep(2000);
 
             // Step 5: Login successfully with the reset password
             await driver.findElement(By.id('login-username')).sendKeys(username);
